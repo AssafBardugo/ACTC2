@@ -18,8 +18,6 @@ char* cont_name = "mycontainer";
 
 int main(int argc, const char* argv[]) {
     char* rootfs_path;
-    char* command;
-    int cmd_nargs;
     pid_t child_pid;
     int wstatus;
 
@@ -28,8 +26,6 @@ int main(int argc, const char* argv[]) {
         return 1;
     }
     rootfs_path = argv[1];
-    command = argv[2];
-    cmd_nargs = argc - 3;
 
     CHECK_SYSCALL(child_pid = fork(), fork)
 
