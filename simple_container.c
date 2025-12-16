@@ -15,7 +15,6 @@
                 printf("%s() fail. errno=%d\n", name, errno);   \
                 exit(1); }
 
-#define UNSHARE_FLAGS   (CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWIPC | CLONE_NEWPID)
 char* cont_name = "mycontainer";
 
 
@@ -33,6 +32,8 @@ int main(int argc, const char* argv[]) {
     rootfs_path = argv[1];
     command = argv[2];
 
+    CHECK_SYSCALL(unshare(CLONE_NEWPID), "unshare-parent")
+
     CHECK_SYSCALL(child_pid = fork(), "fork")
 
     if (child_pid > 0) {
@@ -43,7 +44,7 @@ int main(int argc, const char* argv[]) {
             printf("Child exited with status %d\n", WEXITSTATUS(wstatus));
         }
     } else {
-        CHECK_SYSCALL(unshare(UNSHARE_FLAGS), "unshare")
+        CHECK_SYSCALL(unshare(CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWIPC), "unshare-child")
         CHECK_SYSCALL(sethostname(cont_name, strlen(cont_name)), "sethostname")
 
         CHECK_SYSCALL(mount(NULL, "/", NULL, MS_PRIVATE | MS_REC, NULL), "mount")
@@ -53,6 +54,8 @@ int main(int argc, const char* argv[]) {
         CHECK_SYSCALL(mkdir(old_rootfs, 0755), "mkdir")
 
         CHECK_SYSCALL(syscall(SYS_pivot_root, rootfs_path, old_rootfs), "pivot_root")
+
+        CHECK_SYSCALL(mount("proc", "/proc", "proc", 0, NULL), "mount-proc")
 
         CHECK_SYSCALL(chdir("/"), "chdir")
         CHECK_SYSCALL(umount2("/.oldroot", MNT_DETACH), "unmount2")
