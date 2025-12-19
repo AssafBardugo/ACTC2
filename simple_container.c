@@ -8,8 +8,8 @@
 #include <sched.h>
 #include <errno.h>
 
-#define CHECK_SYSCALL(cmd, name)    \
-            if ((cmd) == -1) {  \
+#define CHECK_SYSCALL(cmd, name)    				\
+            if ((cmd) == -1) {  				\
                 printf("%s() fail. errno=%d\n", name, errno);   \
                 exit(1); }
 
